@@ -10,6 +10,9 @@ from numpy import random
 
 from encrypt import encrypt
 import track
+from transform import transform
+from segmentation import segmentation
+from get_chars import get_chars
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
@@ -26,8 +29,11 @@ def detect(save_img=False):
         ('rtsp://', 'rtmp://', 'http://'))
 
     ###### EDITED ############
-    shuffle_num = random.getrandbits(120)
+    default_shuffle_num = random.getrandbits(120)
     lp_present = False
+    lps = {}
+    
+
 
     ###### EDITED ############
 
@@ -107,21 +113,25 @@ def detect(save_img=False):
 
                 ################# Edited! Retrieves coordinates of LP in image #################################################
                 width, height = 150, 50
-                xmin, ymin, xmax, ymax = max(0, int(det[0, 0] - 5)), max(0, int(det[0, 1] - 5)), min(im0.shape[1], int(
-                    det[0, 2] + 5)), min(im0.shape[0], int(det[0, 3] + 5))
-                print(det[0])
-                print(im0.shape)
+                for j in range(len(det)):
+                  xmin, ymin, xmax, ymax = max(0, int(det[j, 0] - 5)), max(0, int(det[j, 1] - 5)), min(im0.shape[1], int(
+                      det[j, 2] + 5)), min(im0.shape[0], int(det[j, 3] + 5))
+                  lp_transform = transform(cv2.resize(im0[ymin:ymax,xmin: xmax], (width,height)))
 
-                if lp_present is False:
-                    lp_present = True
-                    Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
-                else:
-                    Plate.step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
+                  plate_number = get_chars(im0[ymin:ymax,xmin: xmax])
+                  print(plate_number)
 
-                lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_num)
+                  if plate_number not in lps:
+                      lp_present = True
+                      Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin), plate_number)
+                      lps[plate_number] = Plate
+                  else:
+                      lps[plate_number].step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
 
-                lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
-                im0[ymin:ymax, xmin: xmax] = lp_transform
+                  lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_num)
+
+                  lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+                  im0[ymin:ymax, xmin: xmax] = lp_transform
 
                 ####################################################################
 
@@ -145,14 +155,15 @@ def detect(save_img=False):
                 if lp_present:
                     width, height = 150, 50
                     x, y, size = Plate.nextstep()
-                    print(size)
                     xmin, ymin, xmax, ymax = max(0, int(x - size[0] / 2)), max(0, int(y - size[1] / 2)), min(
                         im0.shape[1], int(x + size[0] / 2)), min(im0.shape[0], int(y + size[1] / 2))
-                    if (xmin >= im0.shape[1] | | ymin >= im0.shape[0]) continue
-                    lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_num)
+                    if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >=0 and xmax >= 0):
 
-                    lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
-                    im0[ymin:ymax, xmin: xmax] = lp_transform
+                      lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_num)
+                      print(xmin, ymin, xmax, ymax)
+                      print(im0.shape)
+                      lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+                      im0[ymin:ymax, xmin: xmax] = lp_transform
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
