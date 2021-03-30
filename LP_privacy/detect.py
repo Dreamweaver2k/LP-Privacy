@@ -32,8 +32,8 @@ def detect(save_img=False):
     default_shuffle_num = random.getrandbits(120)
     lp_present = False
     lps = {}
-    
-
+    shuffle_keys = {}
+    threshold = 200
 
     ###### EDITED ############
 
@@ -114,24 +114,36 @@ def detect(save_img=False):
                 ################# Edited! Retrieves coordinates of LP in image #################################################
                 width, height = 150, 50
                 for j in range(len(det)):
-                  xmin, ymin, xmax, ymax = max(0, int(det[j, 0] - 5)), max(0, int(det[j, 1] - 5)), min(im0.shape[1], int(
-                      det[j, 2] + 5)), min(im0.shape[0], int(det[j, 3] + 5))
-                  lp_transform = transform(cv2.resize(im0[ymin:ymax,xmin: xmax], (width,height)))
+                    xmin, ymin, xmax, ymax = max(0, int(det[j, 0] - 5)), max(0, int(det[j, 1] - 5)), min(im0.shape[1],
+                                                                                                         int(
+                                                                                                             det[
+                                                                                                                 j, 2] + 5)), min(
+                        im0.shape[0], int(det[j, 3] + 5))
+                    lp_transform = transform(cv2.resize(im0[ymin:ymax, xmin: xmax], (width, height)))
 
-                  plate_number = get_chars(im0[ymin:ymax,xmin: xmax])
-                  print(plate_number)
+                    plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
+                    print(plate_number)
 
-                  if plate_number not in lps:
-                      lp_present = True
-                      Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin), plate_number)
-                      lps[plate_number] = Plate
-                  else:
-                      lps[plate_number].step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
+                    if plate_number not in lps:
+                        newplate = True
+                        for p in lps:
+                            if lps[p].distanceTo((xmin + xmax) / 2, (ymin + ymax) / 2) < threshold:
+                                newplate = False
+                                plate_number = p
 
-                  lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_num)
+                        if newplate:
+                            lp_present = True
+                            Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin),
+                                             plate_number)
+                            lps[plate_number] = Plate
+                            shuffle_keys[plate_number] = random.getrandbits(120)
+                    else:
+                        lps[plate_number].step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
 
-                  lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
-                  im0[ymin:ymax, xmin: xmax] = lp_transform
+                    lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[plate_number])
+
+                    lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+                    im0[ymin:ymax, xmin: xmax] = lp_transform
 
                 ####################################################################
 
@@ -153,17 +165,22 @@ def detect(save_img=False):
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
             else:
                 if lp_present:
-                    width, height = 150, 50
-                    x, y, size = Plate.nextstep()
-                    xmin, ymin, xmax, ymax = max(0, int(x - size[0] / 2)), max(0, int(y - size[1] / 2)), min(
-                        im0.shape[1], int(x + size[0] / 2)), min(im0.shape[0], int(y + size[1] / 2))
-                    if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >=0 and xmax >= 0):
+                    remove = []
 
-                      lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_num)
-                      print(xmin, ymin, xmax, ymax)
-                      print(im0.shape)
-                      lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
-                      im0[ymin:ymax, xmin: xmax] = lp_transform
+                    for Plate in lps:
+                        width, height = 150, 50
+                        x, y, size = lps[Plate].nextstep()
+                        xmin, ymin, xmax, ymax = max(0, int(x - size[0] / 2)), max(0, int(y - size[1] / 2)), min(
+                            im0.shape[1], int(x + size[0] / 2)), min(im0.shape[0], int(y + size[1] / 2))
+                        if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >= 0 and xmax >= 0):
+                            lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[Plate])
+                            lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+                            im0[ymin:ymax, xmin: xmax] = lp_transform
+                        else:
+                            remove.append(Plate)
+                    for p in remove:
+                        lps.pop(p)
+                        shuffle_keys.pop(p)
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))

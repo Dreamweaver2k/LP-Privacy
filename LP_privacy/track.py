@@ -12,7 +12,7 @@ class LP:
         self.lp = lp
 
     def step(self, x, y, xsize, ysize):
-        if (self.steps < 10):
+        if (self.steps < 15):
             self.xmotion.append(x - self.x)
             self.ymotion.append(y - self.y)
             self.steps += 1
@@ -38,3 +38,6 @@ class LP:
 
         return x, y, (self.xsize, self.ysize)
 
+    def distanceTo(self, x, y):
+        dist = (self.x - x)**2 + (self.y - y)**2
+        return(dist)

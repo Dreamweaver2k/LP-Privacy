@@ -5,9 +5,7 @@ def segmentation(img):
     img = cv2.equalizeHist(img)
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 65, 15)
     img_edges = cv2.Canny(img, 0,250)
-    cv2.imshow('edge', img_edges)
-    cv2.waitKey()
-    _, contours, h = cv2.findContours(img_edges, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE) #change to contours, h
+    contours, h = cv2.findContours(img_edges, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE) #change to contours, h
     characters = []
     for segment in contours:
         xmin = float('inf')
@@ -47,12 +45,4 @@ def segmentation(img):
             character_im.append(new_im)
     return character_im
 
-image = cv2.imread('results/transformed/clearplate.jpg')
-image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-chars = segmentation(image)
-for c in range(len(chars)):
-    name = str(c) + 'char.jpg'
-    cv2.imwrite(name, chars[c])
-    cv2.imshow('char', chars[c])
     cv2.waitKey()
