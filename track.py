@@ -1,5 +1,5 @@
 class LP:
-    def __init__(self, x, y, xsize, ysize):
+    def __init__(self, x, y, xsize, ysize, lp):
         self.x = x
         self.y = y
         self.velx = 0
@@ -9,6 +9,7 @@ class LP:
         self.steps = 0
         self.xmotion = []
         self.ymotion = []
+        self.lp = lp
 
     def step(self, x, y, xsize, ysize):
         if (self.steps < 10):
