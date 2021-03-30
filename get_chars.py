@@ -1,10 +1,14 @@
 import pytesseract
 from PIL import Image
+import cv2
 
-def get_chars(images):
+def get_chars(image):
     text = ''
-    for im in images:
-        letter = pytesseract.image_to_string(im, config='--psm 10 --oem 6 -c tessedit_char_whitelist=ABCDEFG123456789')
-        if letter == 'l': letter = '1'
-        text += letter.strip()
-    return text
+    text = pytesseract.image_to_string(image , lang='eng', config='--psm 7 --eom 3 -c tessedit_char_whitelist=ADF0123456789')
+    text = text.strip()
+    words = text.split(' ')
+    plate = ''
+    for w in words:
+      if len(w) > len(plate): plate = w
+    return plate
+
