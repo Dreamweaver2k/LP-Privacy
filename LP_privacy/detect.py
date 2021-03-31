@@ -134,13 +134,14 @@ def detect(save_img=False):
                       shuffle_keys[p] = random.getrandbits(120)
 
                     else:
+                      lps[p].add(plate_number)
                       lps[p].step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
 
                     lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[p])
 
                     lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
                     im0[ymin:ymax, xmin: xmax] = lp_transform
-
+              
                 ####################################################################
 
                 # Print results

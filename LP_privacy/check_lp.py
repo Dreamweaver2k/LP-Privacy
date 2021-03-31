@@ -65,13 +65,18 @@ def check(lps, plate_number, coordinates):
         newplate = True
         plate = plate_number
         for p in lps:
-            if lps[p].distanceTo(coordinates[0], coordinates[1]) < 200:
+          if lps[p].distanceTo(coordinates[0], coordinates[1]) < 500:
                 newplate = False
                 plate = p
+          else:
+            for alt in lps[p].lp:
+              if plate_number == alt:
+                newplate = False
+                plate = p
+            
     else:
         newplate = False
         plate = plate_number
 
     return newplate, plate
 
-    
