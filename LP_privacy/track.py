@@ -33,6 +33,21 @@ class LP:
     def nextstep(self):
         x = self.x + self.velx
         y = self.y + self.vely
+
+        if (self.steps < 15):
+            self.xmotion.append(x - self.x)
+            self.ymotion.append(y - self.y)
+            self.steps += 1
+
+        else:
+            self.xmotion.pop(0)
+            self.xmotion.append(x - self.x)
+            self.ymotion.pop(0)
+            self.ymotion.append(y - self.y)
+
+        self.velx = sum(self.xmotion) / self.steps
+        self.vely = sum(self.ymotion) / self.steps
+
         self.x = x
         self.y = y
         if self.steps < 3:
