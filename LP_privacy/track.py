@@ -9,7 +9,7 @@ class LP:
         self.steps = 0
         self.xmotion = []
         self.ymotion = []
-        self.lp = lp
+        self.lp = {lp: 1}
 
     def step(self, x, y, xsize, ysize):
         if (self.steps < 15):
@@ -35,9 +35,17 @@ class LP:
         y = self.y + self.vely
         self.x = x
         self.y = y
+        if self.steps < 3:
+          self.x = -1
+          self.y = -1
 
-        return x, y, (self.xsize, self.ysize)
+        return self.x, self.y, (self.xsize, self.ysize)
 
     def distanceTo(self, x, y):
         dist = (self.x - x)**2 + (self.y - y)**2
         return(dist)
+
+    def add(self, plate):
+        if plate in self.lp: self.lp[plate] += 1
+        else: self.lp[plate] = 1
+

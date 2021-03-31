@@ -13,6 +13,7 @@ import track
 from transform import transform
 from segmentation import segmentation
 from get_chars import get_chars
+import check_lp
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
@@ -123,28 +124,24 @@ def detect(save_img=False):
 
                     plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
                     print(plate_number)
+                    newplate, p = check_lp.check(lps, plate_number, [((xmin + xmax) / 2), ((ymin + ymax) / 2)])
 
-                    if plate_number not in lps:
-                        newplate = True
-                        for p in lps:
-                            if lps[p].distanceTo((xmin + xmax) / 2, (ymin + ymax) / 2) < threshold:
-                                newplate = False
-                                plate_number = p
-
-                        if newplate:
-                            lp_present = True
-                            Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin),
+                    if newplate: 
+                      lp_present = True
+                      Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin),
                                              plate_number)
-                            lps[plate_number] = Plate
-                            shuffle_keys[plate_number] = random.getrandbits(120)
-                    else:
-                        lps[plate_number].step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
+                      lps[p] = Plate
+                      shuffle_keys[p] = random.getrandbits(120)
 
-                    lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[plate_number])
+                    else:
+                      lps[p].add(plate_number)
+                      lps[p].step((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin))
+
+                    lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[p])
 
                     lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
                     im0[ymin:ymax, xmin: xmax] = lp_transform
-
+              
                 ####################################################################
 
                 # Print results
