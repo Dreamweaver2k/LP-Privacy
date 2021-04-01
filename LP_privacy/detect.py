@@ -1,4 +1,4 @@
-##### CODE ADAPTED FROM YOLOv5 detect.py ########
+###### CODE ADAPTED FROM YOLOv5 detect.py ########
 import argparse
 import time
 from pathlib import Path
@@ -14,6 +14,7 @@ from transform import transform
 from segmentation import segmentation
 from get_chars import get_chars
 import check_lp
+import numpy as np
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
@@ -34,8 +35,8 @@ def detect(save_img=False):
     lp_present = False
     lps = {}
     shuffle_keys = {}
-    threshold = 200
-
+    sift = cv2.SIFT_create()
+    buf = 10
     ###### EDITED ############
 
     # Directories
@@ -127,9 +128,11 @@ def detect(save_img=False):
                     newplate, p = check_lp.check(lps, plate_number, [((xmin + xmax) / 2), ((ymin + ymax) / 2)])
 
                     if newplate: 
+                      kp, descriptors = sift.detectAndCompute(im0[ymin:ymax, xmin: xmax], None)
+                      print('helo')
                       lp_present = True
                       Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin),
-                                             plate_number)
+                                             plate_number, descriptors, kp)
                       lps[p] = Plate
                       shuffle_keys[p] = random.getrandbits(120)
 
@@ -166,9 +169,30 @@ def detect(save_img=False):
 
                     for Plate in lps:
                         width, height = 150, 50
-                        x, y, size = lps[Plate].nextstep()
-                        xmin, ymin, xmax, ymax = max(0, int(x - size[0] / 2)), max(0, int(y - size[1] / 2)), min(
-                            im0.shape[1], int(x + size[0] / 2)), min(im0.shape[0], int(y + size[1] / 2))
+                        xmin, xmax, ymin, ymax = lps[Plate].nextstep()
+                        xmin = max(0, xmin)
+                        xmax= min(xmax, im0.shape[1])
+                        ymin = max(0, ymin)
+                        ymax= min(xmax, im0.shape[0])
+                        
+                        kp, descriptors = sift.detectAndCompute(im0[ymin:ymax, xmin: xmax], None)
+
+                        bf = cv2.BFMatcher()
+                        matches = bf.knnMatch(descriptors,lps[Plate].descriptors, k=2)
+
+                        good = []
+                        for m,n in matches:
+                            if m.distance < 0.75*n.distance:
+                                good.append([m])
+
+                        xcoord = []
+                        ycoord = []
+                        for g in good:
+                          xcoord.append(int(kp[g[0].queryIdx].pt[0] + xmin))
+                          ycoord.append(int(kp[g[0].queryIdx].pt[1] + ymin))
+   
+                        xmin, xmax, ymin, ymax =  min(xcoord)- buf, max(xcoord)+buf, min(ycoord)-buf, max(ycoord)+buf
+                                
                         if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >= 0 and xmax >= 0):
                             lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[Plate])
                             lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
