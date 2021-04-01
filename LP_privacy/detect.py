@@ -124,12 +124,11 @@ def detect(save_img=False):
                     lp_transform = transform(cv2.resize(im0[ymin:ymax, xmin: xmax], (width, height)))
 
                     plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
-                    print(plate_number)
+                    #print(plate_number)
                     newplate, p = check_lp.check(lps, plate_number, [((xmin + xmax) / 2), ((ymin + ymax) / 2)])
 
                     if newplate: 
                       kp, descriptors = sift.detectAndCompute(im0[ymin:ymax, xmin: xmax], None)
-                      print('helo')
                       lp_present = True
                       Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin),
                                              plate_number, descriptors, kp)
@@ -143,6 +142,7 @@ def detect(save_img=False):
                     lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[p])
 
                     lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+
                     im0[ymin:ymax, xmin: xmax] = lp_transform
               
                 ####################################################################
