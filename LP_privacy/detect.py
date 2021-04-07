@@ -201,19 +201,7 @@ def detect(save_img=False):
                               lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[Plate])
                               lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
                               im0[ymin:ymax, xmin: xmax] = lp_transform
-                          else:
-                              remove.append(Plate)
-                        else:
-                          xmin, xmax, ymin, ymax = lps[Plate].nextstep()
-                          xmin = max(0, xmin)
-                          xmax= min(xmax, im0.shape[1])
-                          ymin = max(0, ymin)
-                          ymax= min(ymax, im0.shape[0])
-                          if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >= 0 and xmax >= 0):
-                              lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[Plate])
-                              lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
-                              im0[ymin:ymax, xmin: xmax] = lp_transform
-                          else:
+                          elif Plate.unseen > 20:
                               remove.append(Plate)
                     for p in remove:
                         lps.pop(p)

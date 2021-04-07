@@ -12,8 +12,10 @@ class LP:
         self.lp = {lp: 1}
         self.descriptors = descriptors
         self.keypoints = keypoints
+        self.unseen = 0
 
     def step(self, x, y, xsize, ysize):
+        self.unseen = 0
         if (self.steps < 15):
             self.xmotion.append(x - self.x)
             self.ymotion.append(y - self.y)
@@ -33,6 +35,7 @@ class LP:
         self.ysize = ysize
 
     def getbox(self):
+        self.unseen += 1
         x = self.x + self.velx
         y = self.y + self.vely
  
