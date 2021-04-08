@@ -12,8 +12,10 @@ class LP:
         self.lp = {lp: 1}
         self.descriptors = descriptors
         self.keypoints = keypoints
+        self.unseen = 0
 
     def step(self, x, y, xsize, ysize):
+        self.unseen = 0
         if (self.steps < 15):
             self.xmotion.append(x - self.x)
             self.ymotion.append(y - self.y)
@@ -32,6 +34,22 @@ class LP:
         self.xsize = xsize
         self.ysize = ysize
 
+    def getbox(self):
+        self.unseen += 1
+        x = self.x + self.velx
+        y = self.y + self.vely
+ 
+        if self.steps < 3:
+          self.x = -1
+          self.y = -1
+        xmin = min(self.x - self.xsize/2, x - self.xsize/2, self.x + self.xsize/2, x + self.xsize/2)
+        xmax = max(self.x + self.xsize/2, x + self.xsize/2, self.x - self.xsize/2, x - self.xsize/2)
+        ymin = min(self.y - self.ysize/2, y - self.ysize/2, self.y + self.ysize/2, y + self.ysize/2)
+        ymax = max(self.y - self.ysize/2, y - self.ysize/2, self.y + self.ysize/2, y + self.ysize/2)
+
+
+        return int(xmin), int(xmax), int(ymin), int(ymax)
+
     def nextstep(self):
         x = self.x + self.velx
         y = self.y + self.vely
@@ -40,11 +58,12 @@ class LP:
         if self.steps < 3:
           self.x = -1
           self.y = -1
-        xmin = min(self.x - self.xsize/2, x - self.xsize/2, self.x + self.xsize/2, x + self.xsize/2)
-        xmax = max(self.x + self.xsize/2, x + self.xsize/2, self.x - self.xsize/2, x - self.xsize/2)
-        ymin = min(self.y - self.ysize/2, y - self.ysize/2, self.y + self.ysize/2, x + self.ysize/2)
-        ymax = min(self.y - self.ysize/2, y - self.ysize/2, self.y + self.ysize/2, x + self.ysize/2)
+        self.step(x, y,self.xsize, self.ysize)
 
+        xmin = x - self.xsize/2
+        xmax = x + self.xsize/2
+        ymin = y - self.ysize/2
+        ymax = y + self.ysize/2
 
         return int(xmin), int(xmax), int(ymin), int(ymax)
 

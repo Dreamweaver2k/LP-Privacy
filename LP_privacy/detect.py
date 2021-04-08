@@ -124,12 +124,11 @@ def detect(save_img=False):
                     lp_transform = transform(cv2.resize(im0[ymin:ymax, xmin: xmax], (width, height)))
 
                     plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
-                    print(plate_number)
+                    #print(plate_number)
                     newplate, p = check_lp.check(lps, plate_number, [((xmin + xmax) / 2), ((ymin + ymax) / 2)])
 
                     if newplate: 
                       kp, descriptors = sift.detectAndCompute(im0[ymin:ymax, xmin: xmax], None)
-                      print('helo')
                       lp_present = True
                       Plate = track.LP((xmin + xmax) / 2, (ymin + ymax) / 2, (xmax - xmin), (ymax - ymin),
                                              plate_number, descriptors, kp)
@@ -143,6 +142,7 @@ def detect(save_img=False):
                     lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[p])
 
                     lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+
                     im0[ymin:ymax, xmin: xmax] = lp_transform
               
                 ####################################################################
@@ -169,12 +169,11 @@ def detect(save_img=False):
 
                     for Plate in lps:
                         width, height = 150, 50
-                        xmin, xmax, ymin, ymax = lps[Plate].nextstep()
+                        xmin, xmax, ymin, ymax = lps[Plate].getbox()
                         xmin = max(0, xmin)
                         xmax= min(xmax, im0.shape[1])
                         ymin = max(0, ymin)
-                        ymax= min(xmax, im0.shape[0])
-                        
+                        ymax= min(ymax, im0.shape[0])
                         kp, descriptors = sift.detectAndCompute(im0[ymin:ymax, xmin: xmax], None)
 
                         bf = cv2.BFMatcher()
@@ -184,21 +183,26 @@ def detect(save_img=False):
                         for m,n in matches:
                             if m.distance < 0.75*n.distance:
                                 good.append([m])
+                        if len(good) > 4:
+                          xcoord = []
+                          ycoord = []
+                          for g in good:
+                            xcoord.append(int(kp[g[0].queryIdx].pt[0] + xmin))
+                            ycoord.append(int(kp[g[0].queryIdx].pt[1] + ymin))
+    
+                          xmin, xmax, ymin, ymax =  min(xcoord)- buf, max(xcoord)+buf, min(ycoord)-buf, max(ycoord)+buf
+                          xmin = max(0, xmin)
+                          xmax= min(xmax, im0.shape[1])
+                          ymin = max(0, ymin)
+                          ymax= min(ymax, im0.shape[0])
+                                  
+                          if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >= 0 and xmax >= 0):
 
-                        xcoord = []
-                        ycoord = []
-                        for g in good:
-                          xcoord.append(int(kp[g[0].queryIdx].pt[0] + xmin))
-                          ycoord.append(int(kp[g[0].queryIdx].pt[1] + ymin))
-   
-                        xmin, xmax, ymin, ymax =  min(xcoord)- buf, max(xcoord)+buf, min(ycoord)-buf, max(ycoord)+buf
-                                
-                        if (xmin <= im0.shape[1] and ymin <= im0.shape[0] and ymax >= 0 and xmax >= 0):
-                            lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[Plate])
-                            lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
-                            im0[ymin:ymax, xmin: xmax] = lp_transform
-                        else:
-                            remove.append(Plate)
+                              lp_transform = encrypt(im0[ymin:ymax, xmin: xmax], shuffle_keys[Plate])
+                              lp_transform = cv2.resize(lp_transform, (xmax - xmin, ymax - ymin))
+                              im0[ymin:ymax, xmin: xmax] = lp_transform
+                          elif Plate.unseen > 20:
+                              remove.append(Plate)
                     for p in remove:
                         lps.pop(p)
                         shuffle_keys.pop(p)
