@@ -26,5 +26,5 @@ To train new weights, run the following:
 %load_ext tensorboard
 %tensorboard --logdir runs/
 
-!python yolov5/train.py --img 416 --batch 4 --epochs 20 --data data.yaml --cfg yolov5/models/yolov5l.yaml --name lpmodel
+!python yolov5/train.py --img 416 --batch 4 --epochs 20 --data LP_privacy/LP_privacy/dataset/data.yaml --cfg yolov5/models/yolov5l.yaml --name lpmodel
 ```
