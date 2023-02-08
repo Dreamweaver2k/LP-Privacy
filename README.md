@@ -32,7 +32,7 @@ To train new weights, run the following:
 Note, for the cfg flag, the users can select whatever YOLO model size they want. Smaller architectures train and deploy faster. Larger architectures may provide better performance.
 
 ### Final Remarks
-This Repo is a work in progress. Currently the unscrambling of obfuscated license plates is not supported in detect.py. However, this functionality will be added in the future. 
+This Repo is a work in progress. Currently the unscrambling of obfuscated license plates is not supported in detect.py.
 
 ### References
 [^1]: Z. Xu et al., “Towards end-to-end license plate detection and recognition: A large dataset and baseline,” in
