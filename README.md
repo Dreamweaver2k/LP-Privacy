@@ -136,7 +136,9 @@ Note, for the cfg flag, the users can select whatever YOLO model size they want.
 <!-- ### Final Remarks
 This Repo is a work in progress. Currently the unscrambling of obfuscated license plates is not supported in detect.py. -->
 
-### References
+## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [^1]:
     Z. Xu et al., “Towards end-to-end license plate detection and recognition: A large dataset and baseline,” in
