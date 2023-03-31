@@ -56,7 +56,11 @@ I suggest viewing https://tesseract-ocr.github.io/tessdoc/Downloads.html
 
 ##### Deactivate Tesseract
 
-Alternatively, you can deactivate ocr functionality using
+Alternatively, you can deactivate ocr functionality using:
+
+```bash
+python detect.py --source destination/to/video/folder --weights weights/best.pt --tes_enabled=True
+```
 
 ### Download
 
