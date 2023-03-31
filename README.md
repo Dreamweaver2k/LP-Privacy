@@ -133,9 +133,6 @@ To train new weights in Google Colab, run the following:
 
 Note, for the cfg flag, the users can select whatever YOLO model size they want. Smaller architectures train and deploy faster. Larger architectures may provide better performance.
 
-<!-- ### Final Remarks
-This Repo is a work in progress. Currently the unscrambling of obfuscated license plates is not supported in detect.py. -->
-
 ## License
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
