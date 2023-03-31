@@ -63,7 +63,7 @@ Alternatively, you can deactivate ocr functionality using
 To download the repository, run the following commands in the directory of your choice:
 
 ```bash
-git clone https://github.com/Dreamweaver2k/LP_privacy.git
+git clone https://github.com/Dreamweaver2k/LP-Privacy.git
 ```
 
 You can now download the python dependencies by running:
