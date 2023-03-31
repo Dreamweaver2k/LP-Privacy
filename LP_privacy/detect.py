@@ -124,7 +124,7 @@ def detect(save_img=False):
                     lp_transform = transform(cv2.resize(im0[ymin:ymax, xmin: xmax], (width, height)))
 
                     plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
-                    #print(plate_number)
+                    # print(plate_number)
                     newplate, p = check_lp.check(lps, plate_number, [((xmin + xmax) / 2), ((ymin + ymax) / 2)])
 
                     if newplate: 
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
     parser.add_argument('--source', type=str, default='data/images', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.2, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
