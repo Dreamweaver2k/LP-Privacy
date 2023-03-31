@@ -122,8 +122,10 @@ def detect(save_img=False):
                                                                                                                  j, 2] + 5)), min(
                         im0.shape[0], int(det[j, 3] + 5))
                     lp_transform = transform(cv2.resize(im0[ymin:ymax, xmin: xmax], (width, height)))
-
-                    plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
+                    if opt.tes_enabled:
+                        plate_number = get_chars(im0[ymin:ymax, xmin: xmax])
+                    else: 
+                        plate_number = 'new_plate'
                     # print(plate_number)
                     newplate, p = check_lp.check(lps, plate_number, [((xmin + xmax) / 2), ((ymin + ymax) / 2)])
 
@@ -257,6 +259,8 @@ if __name__ == '__main__':
     parser.add_argument('--update', action='store_true', help='update all models')
     parser.add_argument('--project', default='runs/detect', help='save results to project/name')
     parser.add_argument('--name', default='exp', help='save results to project/name')
+    parser.add_argument('--tes_enabled', default='True', help='do you want to run tesseract?')
+
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     opt = parser.parse_args()
     print(opt)
